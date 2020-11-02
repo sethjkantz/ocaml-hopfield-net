@@ -1,0 +1,66 @@
+# #use "load_both_given_and_new.caml";;
+val inner : float list * float list -> float = <fun>
+val netUnit : float list * float list -> float = <fun>
+val netAll : float list * float list list -> float list = <fun>
+val hop11Activation : float * float -> float = <fun>
+val hop11ActAll : float list * float list -> float list = <fun>
+val nextState : float list * float list list -> float list = <fun>
+val updateN : float list * float list list * int -> float list = <fun>
+val findsEquilibrium : float list * float list list * int -> bool = <fun>
+val sizeDif : 'a list * 'b list -> int = <fun>
+val energy : float list * float list list -> float = <fun>
+val genRow : float list * float * int * int -> float list = <fun>
+val genTrain : float list * float list * int -> float list list = <fun>
+val hopTrainAstate : float list -> float list list = <fun>
+val addList : float list * float list -> float list = <fun>
+val addDL : float list list * float list list -> float list list = <fun>
+val addMultDL :
+  float list list list * float list list list -> float list list list = <fun>
+val hopCombine : float list list -> float list list list = <fun>
+val hopTrain : float list list -> float list list = <fun>
+# let os1 = [1.0;-1.0;1.0;-1.0];;
+val os1 : float list = [1.; -1.; 1.; -1.]
+# let os2 = [-1.0;-1.0;1.0;-1.0];;
+val os2 : float list = [-1.; -1.; 1.; -1.]
+# let os3 = [-1.0;-1.0;1.0;1.0];; 
+val os3 : float list = [-1.; -1.; 1.; 1.]
+# let w = hopTrain([os1]);;
+val w : float list list =
+  [[0.; -1.; 1.; -1.]; [-1.; 0.; -1.; 1.]; [1.; -1.; 0.; -1.];
+   [-1.; 1.; -1.; 0.]]
+# let w2 = hopTrain([os1;os2;os3]);;
+val w2 : float list list =
+  [[0.; 1.; -1.; -1.]; [1.; 0.; -3.; 1.]; [-1.; -3.; 0.; -1.];
+   [-1.; 1.; -1.; 0.]]
+# hopTrainAstate(os1);;
+- : float list list =
+[[0.; -1.; 1.; -1.]; [-1.; 0.; -1.; 1.]; [1.; -1.; 0.; -1.];
+ [-1.; 1.; -1.; 0.]]
+# hopTrainAstate(os2);;
+- : float list list =
+[[0.; 1.; -1.; 1.]; [1.; 0.; -1.; 1.]; [-1.; -1.; 0.; -1.];
+ [1.; 1.; -1.; 0.]]
+# energy(os1,w);;
+- : float = -6.
+# energy(os2,w);;
+- : float = 0.
+# findsEquilibrium(os1,w,3);;
+- : bool = true
+# findsEquilibrium(os2,w,2);;
+- : bool = true
+# let oi= [-1.0;-1.0];;
+val oi : float list = [-1.; -1.]
+# let we = [[0.0;-1.0];[-1.0;0.0]];;
+val we : float list list = [[0.; -1.]; [-1.; 0.]]
+# updateN(oi,we,1);;
+- : float list = [1.; 1.]
+# updateN(oi,we,2);;
+- : float list = [-1.; -1.]
+# updateN(oi,we,9);;
+- : float list = [1.; 1.]
+# nextState(os1,w);;
+- : float list = [1.; -1.; 1.; -1.]
+# nextState(os2,w2);;
+- : float list = [-1.; -1.; 1.; -1.]
+# nextState(nextState(os1,w2),w2);;
+- : float list = [-1.; -1.; 1.; -1.]

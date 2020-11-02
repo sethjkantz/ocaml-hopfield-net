@@ -1,0 +1,124 @@
+(**
+	sde1_sp2020.caml
+	Seth Kantz
+	C20741305
+*)
+
+
+(**-----------------------Functions for nextState-----------------------------------------*)
+
+(** ---list float * list list float -> list float	---*)
+let nextState = function (currentState,weightMatrix) ->
+    if currentState == []
+       then []
+    else
+	hop11ActAll(netAll(currentState,weightMatrix),currentState);;
+
+
+(**-----------------------Functions for updateN-----------------------------------------*)
+
+(** --- list float * list list float * int -> list float ---*)
+let rec updateN = function(currentState, weightMatrix, n)->
+    if n >0 then
+       updateN(nextState(currentState, weightMatrix), weightMatrix, n-1) 
+    else
+	currentState;;
+
+
+(** ---list * list list * int = bool ---*)
+let rec findsEquilibrium = function(initialState,weightMatrix,range) ->
+    if range > 0
+       then if updateN(initialState,weightMatrix,range-1) = updateN(initialState,weightMatrix,range)
+       	    then true
+       else
+	  findsEquilibrium(initialState,weightMatrix,range-1)
+    else
+	false;;
+
+
+(**-----------------------Functions for energy-----------------------------------------*)
+
+(** ---'a list * 'b list -> int ---*)
+let rec sizeDif = function(bigMat,smallMat) ->
+    if bigMat = [] && smallMat = []
+       then 0
+    else if smallMat = []
+    	then 1 + sizeDif(List.tl bigMat,smallMat)
+    else
+	sizeDif(List.tl bigMat, List.tl smallMat);;
+
+(** --- list * list list = float ---*)
+let rec energy = function(state,weightMatrix) ->
+    if state = [] || weightMatrix = []
+       then 0.
+    else
+	-0.5 *. netUnit(state,List.hd weightMatrix) *. (List.nth state (sizeDif(state,weightMatrix))) +. energy(state,List.tl weightMatrix);;
+
+
+(**-----------------------Functions for hopTrainAstate-----------------------------------------*)
+
+(** ---list float * float * int * int -> list float --- *)
+let rec genRow = function(stateRow,iVal,i,j) ->
+    if stateRow = []
+       then []
+    else
+	if i = j
+	   then 0. :: genRow(List.tl stateRow,iVal,i,j+1)
+	else
+	    List.hd stateRow *. iVal :: genRow(List.tl stateRow,iVal,i,j+1);;
+
+(** ---list float * list float * int -> list list float--- *)
+let rec genTrain = function(state,curState,i) ->
+    if state = [] || curState = []
+       then []
+    else
+	genRow(state,List.hd curState,i,0) :: genTrain(state,List.tl curState,i+1);;
+
+(** --- list -> list list ---*)
+let hopTrainAstate = function (astate) ->
+    if(astate = [])
+         then []
+    else
+	genTrain(astate,astate,0);;
+
+
+(**-----------------------Functions for hopTrain-----------------------------------------*)
+
+(** ---list float * list float -> list float---*)
+let rec addList = function (list1,list2) ->
+    if list1 = [] || list2 = []
+       then []
+    else
+	List.hd list1 +. List.hd list2:: addList(List.tl list1,List.tl list2);;
+	
+(** ---list list float * list list float -> list list float---*)
+let rec addDL = function (list1,list2) ->
+    if list1 = [] || list2 = []
+       then []
+    else
+	addList(List.hd list1, List.hd list2) :: addDL(List.tl list1,List.tl list2);;
+
+(** ---list list list float * list list list float -> list list list float---*)
+let rec addMultDL = function(tripList, tripTail) ->
+    if tripList = []
+       then []
+    else if tripTail = []
+    	 then tripList
+    else
+	addMultDL([addDL(List.hd tripList,List.hd tripTail)],List.tl tripTail);;
+
+(** ---list list -> list list list ---*)
+let rec hopCombine = function(states) ->
+    if states = []
+       then []
+    else
+	hopTrainAstate(List.hd states) :: hopCombine(List.tl states);;
+
+(**`---list list = list list---*)
+let hopTrain = function (allStates) ->
+    if allStates = []
+       then []
+    else
+	List.hd(addMultDL(hopCombine(allStates),List.tl(hopCombine(allStates))));;
+    	 
+
