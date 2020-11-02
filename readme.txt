@@ -1,12 +1,7 @@
 README.txt
 Seth Kantz
-skantz
-C20741305
-SDE1
 
-Pledge:
-On my honor I have neither given nor received aid on this exam.
-   - Seth Kantz
+SDE1
 
 Description:
 
